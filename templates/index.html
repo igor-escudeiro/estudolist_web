@@ -1,14 +1,43 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EsTuDolist</title>
-    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
-</head>
-<body>
-    <h1> Página inicial - EsTuDolist</h1>
-    <h2>Olá, usuario!</h2>
-    <a href="/logout"><button>Sair</button></a>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Início | EsToDoList{% endblock %}
+
+{% block content %}
+<main class="max-w-5xl mx-auto px-4 py-6">
+  <h2 class="text-2xl font-bold">Minhas tarefas</h2>
+  <ul class="space-y-3">
+    {% for tarefa in tarefas %}
+    <li class="bg-white rounded-xl shadow p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">{{
+      tarefa.nome_tarefa }}
+      <div class="space-y-2 sm:flex-1">
+        {# trocar span em breve #}
+        <span class="block font-medium">{{ tarefa.nome_tarefa }}</span>
+        {% if tarefa.descricao %}
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+          <p class="text-sm text-slate-600">{{ tarefa.descricao }}</p>
+          {% endif %}
+          <div class="flex flex-wrap itens-center gap-2 text-sm">
+            <span clas="block text-sm text-slate-500">{{ tarefa.categoria }}</span>
+            <span class="text-slate-500">{{ tarefa.data_prazo.strftime("%d/%m/%Y")}}</span>
+            <span class="px-2 py-1 rounded-full
+        {% if tarefa.prioridade == 'ALTA' %}bg-red-100 text-red-700
+        {% elif tarefa.prioridade == 'MEDIA' %}bg-amber-100 text-amber-700
+        {% else %}bg-green-100 text-green-700
+        {% endif %}">
+              Prioridade:
+              {% if tarefa.prioridade == 'ALTA' %}Alta
+              {% elif tarefa.prioridade == 'MEDIA' %}Média
+              {% else %}Baixa{% endif %}
+            </span>
+            <span class="block fornt-médium" {% if tarefa.status=="concluída" %} line-through text-slate-400 {% endif
+              %}>
+              {{ tarefa.nome_tarefa }}
+            </span>
+          </div>
+        </div>
+        {# botão aqui #}
+    </li>
+    {% endfor %}
+  </ul>
+  {# contador aqui #}
+</main>
+{% endblock %}
