@@ -1,11 +1,35 @@
-from flask import Flask, render_template, request, session, redirect
-from database import consultar_tarefas
+from flask import Flask, render_template, request, session, redirect, flash
+from database import consultar_tarefas, inserir_tarefa
+from datetime import date
 app = Flask(__name__)
 app.secret_key = "igor"
 
 # Dados de acesso do ADMIN
 ADMIN_EMAIL = "igor.escudeiro@gmail.com"
 ADMIN_SENHA = "123456"
+
+# Constantes 
+CATEGORIA = ["Escola","Trabalho","Projeto","Pessoal","Saúde","Outros"]
+
+
+def validar_tarefa(nome, descricao, categoria, prazo, prioridade):
+    erros = []
+
+    if len(nome) < 5 or len(nome) > 30 or nome.isdigit():
+        erros.append("Nome: de 5 a 30 caracteres, não só números.")
+
+    if len(descricao) > 100:
+        erros.append("Descrição: no máximo 100 caracteres.")
+
+    if len(categoria) < 5 or len(categoria) > 30 or categoria.isdigit():
+        erros.append("Categoria: de 5 a 30 caracteres, não só números.")
+
+    if prioridade not in ("ALTA", "MEDIA", "BAIXA"):
+        erros.append("Prioridade inválida.")
+
+    # Validar o prazo aqui
+
+    return erros
 
 @app.route("/") # HomePage- Página Inicial
 def home():
@@ -42,49 +66,34 @@ def login():
 def logout():
     session.clear() # Apaga a lista sessão
     return redirect("/login")
+
+#-----------------------------------------------------------------------------------------------------------------------------------
+# Rota que mostra o formuláro
+
+@app.route("/adicionar", methods=["GET", "POST"])
+def adicionar():
+    if request.method == "GET":
+        return render_template ("formulario.html", categorias=CATEGORIA, dados={}, erros=[])
+    # POST: ler o que veio do formulário
+    nome_tarefa = request.form.get("nome_tarefa", "").strip()
+    descricao = request.form.get("descricao", "").strip()
+    categoria = request.form.get("categoria", "").strip()
+    data_prazo = request.form.get("data_prazo", "")
+    prioridade = request.form.get("prioridade", "")
+
+    # Validar os campos aqui
+    if inserir_tarefa(nome_tarefa, descricao, categoria, data_prazo, prioridade):
+        flash("Tarefa adicionada com sucesso!")
+    else:
+        flash("Não foi possível salvar. Confira a conexão com o banco.")
+
+    return redirect("/")
+
 # --------------------------------------------------------------------------------------------------------------------------------
 # Tratamento de erro - Código 404
 @app.errorhandler(404)
 def not_found(erro):
     return render_template("erro404.html")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
