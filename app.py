@@ -11,8 +11,9 @@ ADMIN_SENHA = "123456"
 # Constantes 
 CATEGORIA = ["Escola","Trabalho","Projeto","Pessoal","Saúde","Outros"]
 
-
-def validar_tarefa(nome, descricao, categoria, prazo, prioridade):
+# --------------------------------------------------------------------------------------------------------------------------------
+# Função de validar tarefa 
+def validar_tarefa(nome, descricao, categoria, prazo, prioridade): # Parametros que são analizados.
     erros = []
 
     if len(nome) < 5 or len(nome) > 30 or nome.isdigit():
@@ -27,8 +28,12 @@ def validar_tarefa(nome, descricao, categoria, prazo, prioridade):
     if prioridade not in ("ALTA", "MEDIA", "BAIXA"):
         erros.append("Prioridade inválida.")
 
-    # Validar o prazo aqui
-
+    try:
+        data = date.fromisoformat(prazo)
+        if data < date.today():
+            erros.append("Prazo: a data não pode ser no passado")
+    except ValueError:
+        erros.append("Prazo: informe um data válida")
     return erros
 
 @app.route("/") # HomePage- Página Inicial
@@ -81,9 +86,14 @@ def adicionar():
     data_prazo = request.form.get("data_prazo", "")
     prioridade = request.form.get("prioridade", "")
 
-    # Validar os campos aqui
+    erros = validar_tarefa(nome_tarefa, descricao, categoria, data_prazo, prioridade)
+
+    if erros:
+        return render_template("formulario.html", categorias=CATEGORIA, dados=request.form, erros=erros)
+    
     if inserir_tarefa(nome_tarefa, descricao, categoria, data_prazo, prioridade):
         flash("Tarefa adicionada com sucesso!")
+        
     else:
         flash("Não foi possível salvar. Confira a conexão com o banco.")
 
